@@ -13,6 +13,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->company_owner()->simplePassword()->create(['company_id' => 11]);
+        User::factory()->companyOwner()->simplePassword()->create(['company_id' => 11]);
     }
 }

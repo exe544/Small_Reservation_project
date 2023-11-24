@@ -39,7 +39,7 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function company_owner(): static
+    public function companyOwner(): static
     {
         return $this->state(fn(array $attributes) =>[
             'role_id' => Role::COMPANY_OWNER->value,
