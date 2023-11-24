@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -26,12 +27,31 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role_id' => Role::CUSTOMER->value,
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
+    public function admin(): static
+    {
+        return $this->state(fn(array $attributes) =>[
+            'role_id' => Role::ADMINISTRATOR->value,
+        ]);
+    }
+
+    public function company_owner(): static
+    {
+        return $this->state(fn(array $attributes) =>[
+            'role_id' => Role::COMPANY_OWNER->value,
+        ]);
+    }
+
+    public function guide(): static
+    {
+        return $this->state(fn(array $attributes) =>[
+            'role_id' => Role::GUIDE->value,
+        ]);
+    }
+
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [
