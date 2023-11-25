@@ -145,11 +145,6 @@ class CompanyUserTest extends TestCase
 
         $response->assertRedirectToRoute('companies.users.index', $company);
 
-        $this->assertDatabaseMissing('users', [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ]);
-
+        $this->assertSoftDeleted($user);
     }
 }
