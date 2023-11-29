@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyUserController;
+use App\Http\Controllers\CompanyGuideController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('companies', CompanyController::class)->middleware('isAdmin')->except('show');
 
     Route::resource('companies.users', CompanyUserController::class)->except('show');
+    Route::resource('companies.guides', CompanyGuideController::class)->except('show');
 });
 
 require __DIR__.'/auth.php';
