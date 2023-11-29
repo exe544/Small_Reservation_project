@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\User;
 
+use App\Models\Company;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 
 class UserStoreRequest extends FormRequest
