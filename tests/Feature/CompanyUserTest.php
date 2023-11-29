@@ -294,6 +294,5 @@ class CompanyUserTest extends TestCase
             'company_id' => $companyUser->company_id,
             'deleted_at' => null,
         ]);
-
     }
 }

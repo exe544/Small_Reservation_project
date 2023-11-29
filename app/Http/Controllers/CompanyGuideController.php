@@ -67,6 +67,8 @@ class CompanyGuideController extends Controller
 
     public function destroy(Company $company, User $guide): RedirectResponse
     {
+        $this->authorize('delete', $company);
+
         $guide->delete();
 
         return to_route('companies.guides.index', compact('company'));
