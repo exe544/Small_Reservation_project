@@ -20,6 +20,11 @@
                         {{ __('Companies') }}
                     </x-nav-link>
                     @endif
+                    @if(auth()->user()->role->name === 'company owner')
+                        <x-nav-link :href="route('companies.users.index', auth()->user()->company_id)" :active="request()->routeIs('companies.users.*')">
+                            {{ __('Administrators') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
