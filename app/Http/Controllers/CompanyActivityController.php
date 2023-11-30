@@ -17,6 +17,8 @@ class CompanyActivityController extends Controller
 
     public function index(Company $company): View
     {
+        $this->authorize('viewAny', $company);
+
         $company = $company->load('activities');
 
         return view('companies.activities.index', compact('company'));
@@ -24,6 +26,8 @@ class CompanyActivityController extends Controller
 
     public function create(Company $company): View
     {
+        $this->authorize('create', $company);
+
         $guides = $company->guides();
 
         return view('companies.activities.create', compact('company', 'guides'));
@@ -31,6 +35,8 @@ class CompanyActivityController extends Controller
 
     public function store(ActivityStoreRequest $request, Company $company): RedirectResponse
     {
+        $this->authorize('create', $company);
+
         if ($request->hasFile('image')) {
                 $path = $request->file('image')->store('activities', 'public');
         }
@@ -42,6 +48,7 @@ class CompanyActivityController extends Controller
 
     public function edit(Company $company, Activity $activity): View
     {
+        $this->authorize('update', $activity);
         $guides = $company->guides();
 
         return view('companies.activities.edit', compact('guides', 'activity', 'company'));
@@ -49,6 +56,8 @@ class CompanyActivityController extends Controller
 
     public function update(ActivityUpdateRequest $request, Company $company, Activity $activity)
     {
+        $this->authorize('update', $activity);
+
         $validatedData = $request->validated();
 
         if (isset($validatedData['image'])) {
@@ -67,6 +76,8 @@ class CompanyActivityController extends Controller
 
     public function destroy(Company $company, Activity $activity): RedirectResponse
     {
+        $this->authorize('delete', $activity);
+
         $activity->delete();
 
         return to_route('companies.activities.index', $company);
