@@ -54,7 +54,7 @@ class CompanyActivityController extends Controller
         return view('companies.activities.edit', compact('guides', 'activity', 'company'));
     }
 
-    public function update(ActivityUpdateRequest $request, Company $company, Activity $activity)
+    public function update(ActivityUpdateRequest $request, Company $company, Activity $activity): RedirectResponse
     {
         $this->authorize('update', $activity);
 
@@ -78,6 +78,9 @@ class CompanyActivityController extends Controller
     {
         $this->authorize('delete', $activity);
 
+        if ($activity->photo){
+            Storage::disk('public')->delete($activity->photo);
+        }
         $activity->delete();
 
         return to_route('companies.activities.index', $company);
