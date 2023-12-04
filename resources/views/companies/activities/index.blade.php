@@ -40,8 +40,8 @@
                             @foreach($company->activities as $activity)
                                 <tr class="bg-white">
                                     <td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">
-                                        @if($activity->photo)
-                                            <img src="{{ asset('storage/'.$activity->photo) }}" alt="{{ $activity->name }}" class="w-16 h-16 rounded-xl">
+                                        @if($activity->thumbnail)
+                                            <img src="{{ asset('storage'.$activity->thumbnail) }}" alt="{{ $activity->name }}" class="w-16 h-16 rounded-xl">
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">

@@ -31,6 +31,13 @@ class Activity extends Model
         );
     }
 
+    protected function thumbnail(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->photo ? '/activities/thumbs/' . $this->photo : '/no_image.jpg'
+        );
+    }
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'company_id', 'id');

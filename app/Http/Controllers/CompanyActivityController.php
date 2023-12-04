@@ -80,9 +80,6 @@ class CompanyActivityController extends Controller
     {
         $this->authorize('delete', $activity);
 
-        if ($activity->photo){
-            Storage::disk('public')->delete($activity->photo);
-        }
         $activity->delete();
 
         return to_route('companies.activities.index', $company);
