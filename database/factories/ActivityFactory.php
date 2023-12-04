@@ -19,14 +19,14 @@ class ActivityFactory extends Factory
         ];
     }
 
-    public function withPhotoPath(): Factory
+    public function withPhotoName(): Factory
     {
         $image = UploadedFile::fake()->image('avatar.jpg')->size(500);
-        $path = $image->store('activities', 'public');
+        $fileName = $image->store(options: 'activities');
 
-        return $this->state(function (array $attributes) use ($path) {
+        return $this->state(function (array $attributes) use ($fileName) {
            return [
-               'photo' => $path,
+               'photo' => $fileName,
            ];
         });
     }
