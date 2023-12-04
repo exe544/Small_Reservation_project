@@ -43,16 +43,15 @@ class CompanyGuideTest extends TestCase
     {
         $company = Company::factory()->create();
         $companyOwner = User::factory()->companyOwner()->create(['company_id' => $company->id]);
-        $guide = User::factory()->make()->toArray();
-        $guide['password'] = "123456789";
+        $guideEmail = User::factory()->make()->toArray();
 
-        $response = $this->actingAs($companyOwner)->post(route('companies.guides.store', $company->id), $guide);
+        $response = $this->actingAs($companyOwner)->post(route('companies.guides.store', $company->id), $guideEmail);
 
         $response->assertRedirectToRoute('companies.guides.index', $company);
 
-        $this->assertDatabaseHas('users', [
-            'name' => $guide['name'],
-            'email' => $guide['email'],
+        $this->assertDatabaseHas('registration_invitations', [
+            'email' => $guideEmail['email'],
+            'registered_at' => null,
             'company_id' => $companyOwner->company_id,
             'role_id' => Role::GUIDE->value,
         ]);
@@ -62,17 +61,11 @@ class CompanyGuideTest extends TestCase
         $company = Company::factory()->create();
         $company2 = Company::factory()->create();
         $companyOwner = User::factory()->companyOwner()->create(['company_id' => $company->id]);
-        $guide = User::factory()->make()->toArray();
-        $guide['password'] = "123456789";
+        $guideEmail = User::factory()->make()->toArray();
 
-        $response = $this->actingAs($companyOwner)->post(route('companies.guides.store', $company2->id), $guide);
+        $response = $this->actingAs($companyOwner)->post(route('companies.guides.store', $company2->id), $guideEmail);
 
         $response->assertStatus(403);
-        $this->assertDatabaseMissing('users', [
-            'name' => $guide['name'],
-            'email' => $guide['email'],
-            'company_id' => $companyOwner->company_id,
-        ]);
     }
 
     public function test_company_owner_can_update_users_from_his_company(): void
