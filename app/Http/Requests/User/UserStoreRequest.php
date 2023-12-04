@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\User;
 
-use App\Models\Company;
+use App\Rules\RegistrationLinkWasSent;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
+
 
 class UserStoreRequest extends FormRequest
 {
@@ -20,9 +20,14 @@ class UserStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:2', 'max:35'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', Password::default()],
+            'email' => ['required', 'email', Rule::unique('users', 'email'), new RegistrationLinkWasSent()],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'email.RegistrationLinkWasSent' => 'Invitation with this email address already requested.'
         ];
     }
 }
