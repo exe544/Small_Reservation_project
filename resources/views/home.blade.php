@@ -14,7 +14,7 @@
                             <div>
                                 <img src="{{ asset('storage' . $activity->thumbnail) }}" alt="{{ $activity->name }}">
                                 <h2>
-                                    <a href="#" class="text-lg font-semibold">{{ $activity->name }}</a>
+                                    <a href="{{ route('activity.show', $activity) }}" class="text-lg font-semibold">{{ $activity->name }}</a>
                                 </h2>
                                 <time>{{ $activity->start_date }}</time>
                             </div>
