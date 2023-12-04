@@ -18,9 +18,14 @@ class GuideStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'min:2', 'max:55'],
-            'email' => ['required', 'email', Rule::unique('users', 'email')],
-            'password' => ['required', Password::default()],
+            'email' => ['required', 'email', Rule::unique('users', 'email'), 'unique:registration_invitations,email'],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'email.unique' => 'Invitation with this email address already requested.'
         ];
     }
 }

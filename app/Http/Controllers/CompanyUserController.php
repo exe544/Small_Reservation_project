@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Http\Requests\User\UserStoreRequest;
 use App\Http\Requests\User\UserUpdateRequest;
+use App\Mail\RegistrationInviteMail;
 use App\Models\Company;
+use App\Models\RegistrationInvitation;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CompanyUserController extends Controller
@@ -34,13 +38,16 @@ class CompanyUserController extends Controller
     {
         $this->authorize('create', $company);
 
-        $validatedData = $request->validated();
-        $newUser = $company->users()->create([
-            'name' => $validatedData['name'],
-            'email'=> $validatedData['email'],
-            'password' => bcrypt($validatedData['password']),
+        $email = ($request->validated('email'));
+
+        $invitation = RegistrationInvitation::create([
+            'email' => $email,
+            'token' => Str::uuid(),
+            'company_id' => $company->id,
             'role_id' => Role::COMPANY_OWNER->value,
         ]);
+
+        Mail::to($email)->send(new RegistrationInviteMail($invitation));
 
         return to_route('companies.users.index', compact('company'));
     }
