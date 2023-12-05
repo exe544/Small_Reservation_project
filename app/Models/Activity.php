@@ -34,7 +34,7 @@ class Activity extends Model
     protected function thumbnail(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->photo ? '/activities/thumbs/' . $this->photo : '/no_image.jpg'
+            get: fn() => $this->photo ? '/activities/thumbs/' . $this->photo : '/activities/thumbs/no_image.jpg'
         );
     }
 
