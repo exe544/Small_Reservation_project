@@ -11,6 +11,7 @@ use App\Models\Company;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Intervention\Image\Facades\Image;
 
 class CompanyActivityController extends Controller
 {
@@ -37,11 +38,14 @@ class CompanyActivityController extends Controller
     {
         $this->authorize('create', $company);
 
-        if ($request->hasFile('image')) {
-                $path = $request->file('image')->store('activities', 'public');
-        }
+        $validatedData = $request->validated();
 
-        Activity::create($request->validated() + ['company_id' => $company->id, 'photo' => $path ?? null]);
+        $fileName = $this->uploadImage($validatedData);
+
+        Activity::create($validatedData + [
+            'company_id' => $company->id,
+            'photo' => $fileName,
+            ]);
 
         return to_route('companies.activities.index', $company);
     }
@@ -57,18 +61,16 @@ class CompanyActivityController extends Controller
     public function update(ActivityUpdateRequest $request, Company $company, Activity $activity): RedirectResponse
     {
         $this->authorize('update', $activity);
-
         $validatedData = $request->validated();
 
-        if (isset($validatedData['image'])) {
-           $path = $validatedData['image']->store('activities', 'public');
-           if($activity->photo){
-             Storage::disk('public')->delete($activity->photo);
-           }
+        $fileName = $this->uploadImage($validatedData);
+
+        if($fileName && $activity->photo) {
+             Storage::disk('activities')->delete($activity->photo);
         }
 
         $activity->update($validatedData + [
-            'photo' => $path ?? $activity->photo,
+            'photo' => $fileName ?? $activity->photo,
             ]);
 
         return to_route('companies.activities.index', $company);
@@ -78,11 +80,26 @@ class CompanyActivityController extends Controller
     {
         $this->authorize('delete', $activity);
 
-        if ($activity->photo){
-            Storage::disk('public')->delete($activity->photo);
-        }
         $activity->delete();
 
         return to_route('companies.activities.index', $company);
+    }
+
+    private function uploadImage(array $validatedData): string|null
+    {
+        if (!isset($validatedData['image'])) {
+           return null;
+        }
+
+        $fileName = $validatedData['image']->store(options: 'activities');
+
+        $img = Image::make(Storage::disk('activities')->get($fileName))
+            ->resize(270, 270, function ($constraint) {
+                $constraint->aspectRatio();
+            });
+
+        Storage::disk('activities')->put('thumbs/' . $validatedData['image']->hashName(), $img->stream());
+
+        return $fileName;
     }
 }

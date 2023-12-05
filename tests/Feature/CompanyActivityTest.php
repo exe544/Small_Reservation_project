@@ -37,7 +37,7 @@ class CompanyActivityTest extends TestCase
 
     public function test_company_owner_can_create_activities_for_his_company(): void
     {
-        Storage::fake('public');
+        Storage::fake('activities');
         $file = UploadedFile::fake()->image('avatar.jpg')->size(500);
 
         $company = Company::factory()->create();
@@ -47,7 +47,7 @@ class CompanyActivityTest extends TestCase
 
         $this->actingAs($owner)->post(route('companies.activities.store', $company), $activity);
 
-        Storage::disk('public')->assertExists('activities/'. $file->hashName());
+        Storage::disk('activities')->assertExists($file->hashName());
 
         $this->assertDatabaseHas('activities', [
             'name' => $activity['name'],
@@ -136,23 +136,26 @@ class CompanyActivityTest extends TestCase
 
     public function test_company_owner_can_update_activity_for_his_company(): void
     {
-        Storage::fake('public');
+        Storage::fake('activities');
         $newFile = UploadedFile::fake()->image('avatar2.jpg')->size(500);
 
         $company = Company::factory()->create();
         $guide = User::factory()->guide()->create(['company_id' => $company->id]);
         $owner = User::factory()->companyOwner()->create(['company_id' => $company->id]);
 
-        $activityOld = Activity::factory()->withPhotoPath()->create(['company_id' => $company->id, 'guide_id' => $guide->id]);
+        $activityOld = Activity::factory()->withPhotoName()->create(['company_id' => $company->id, 'guide_id' => $guide->id]);
 
         $activityNew = Activity::factory()->make(['guide_id' => $guide->id, 'image' => $newFile])->toArray();
 
         $response = $this->actingAs($owner)->put(route('companies.activities.update', [$company, $activityOld]), $activityNew);
 
-        //assert that old image was removed from storage
+
         $response->assertRedirectToRoute('companies.activities.index', $company);
-        Storage::disk('public')->assertMissing($activityOld->photo);
-        Storage::disk('public')->assertExists('activities/'. $newFile->hashName());
+        Storage::disk('activities')->assertExists($newFile->hashName());
+
+        //assert that old image was removed from storage
+        Storage::disk('activities')->assertMissing($activityOld->photo);
+
 
         $this->assertDatabaseHas('activities', [
             'name' => $activityNew['name'],
@@ -208,7 +211,7 @@ class CompanyActivityTest extends TestCase
         $company = Company::factory()->create();
         $guide = User::factory()->guide()->create(['company_id' => $company->id]);
         $owner = User::factory()->companyOwner()->create(['company_id' => $company->id]);
-        $activity = Activity::factory()->withPhotoPath()->create(['company_id' => $company->id, 'guide_id' => $guide->id]);
+        $activity = Activity::factory()->withPhotoName()->create(['company_id' => $company->id, 'guide_id' => $guide->id]);
 
         $this->actingAs($owner)->delete(route('companies.activities.update', [$company, $activity]));
 
