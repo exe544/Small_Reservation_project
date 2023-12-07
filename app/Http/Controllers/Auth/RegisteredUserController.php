@@ -54,23 +54,16 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($request->session()->get('invitation_token')) {
-            $invitation = RegistrationInvitation::where('token', $request->session()->get('invitation_token'))
-                ->where('email', $request->email)
-                ->whereNull('registered_at')
-                ->firstOr(fn() => throw ValidationException::withMessages(['invitation' => 'Invitation link does not match email indicated!']));
 
-            $roleFromInvite = $invitation->role_id;
-            $company_id = $invitation->company_id;
-
-            $invitation->update(['registered_at' => now()]);
+           $invitationTokenData = $this->registrationWithToken($request);
         }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => $roleFromInvite ?? Role::CUSTOMER->value,
-            'company_id' => $company_id ?? null,
+            'role_id' => $invitationTokenData['role_id'] ?? Role::CUSTOMER->value,
+            'company_id' => $invitationTokenData['company_id'] ?? null,
         ]);
 
         event(new Registered($user));
@@ -85,5 +78,17 @@ class RegisteredUserController extends Controller
         }
 
         return redirect(RouteServiceProvider::HOME);
+    }
+
+    protected function registrationWithToken($request): array
+    {
+        $invitation = RegistrationInvitation::where('token', $request->session()->get('invitation_token'))
+            ->where('email', $request->email)
+            ->whereNull('registered_at')
+            ->firstOr(fn() => throw ValidationException::withMessages(['invitation' => 'Invitation link does not match email indicated!']));
+
+        $invitation->update(['registered_at' => now()]);
+
+        return ['role_id' => $invitation->role_id, 'company_id' => $invitation->company_id];
     }
 }
