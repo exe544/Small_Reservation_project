@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\User;
 use App\Notifications\RegisteredToActivityNotification;
+use App\Services\ActivityRegisterService;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,14 +18,9 @@ class ActivityRegisterController extends Controller
       if (!Auth::check()){
           return to_route('register', ['activity' => $activity->id]);
       }
-      $user = Auth::user();
 
-      abort_if($user->activities()->where('id', $activity->id)->exists(), Response::HTTP_CONFLICT);
+      $message = (new ActivityRegisterService(Auth::user(), $activity))->registerOnActivity();
 
-      $user->activities()->attach($activity->id);
-
-      $user->notify(new RegisteredToActivityNotification($activity));
-
-      return to_route('my-activity.show')->with('success', 'You have successfully registered.');
+      return to_route('my-activity.show')->with('success', $message);
     }
 }

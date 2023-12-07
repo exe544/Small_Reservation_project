@@ -6,9 +6,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\RegistrationInvitation;
 use App\Models\User;
+use App\Notifications\RegisteredToActivityNotification;
 use App\Providers\RouteServiceProvider;
+use App\Services\ActivityRegisterService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +26,10 @@ class RegisteredUserController extends Controller
     public function create(Request $request): View
     {
         $email = null;
+
+        if ($request->has('activity')){
+            session()->put('activity', $request->input('activity'));
+        }
 
         if($request->has('invitation_token')){
 
@@ -69,6 +76,13 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        if ($request->session()->get('activity')){
+
+            $message = (new ActivityRegisterService($user, Activity::find($request->session()->get('activity'))))->registerOnActivity();
+
+            return redirect()->route('my-activity.show')->with('success', $message);
+        }
 
         return redirect(RouteServiceProvider::HOME);
     }
