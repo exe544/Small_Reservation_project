@@ -6,9 +6,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\RegistrationInvitation;
 use App\Models\User;
+use App\Notifications\RegisteredToActivityNotification;
 use App\Providers\RouteServiceProvider;
+use App\Services\ActivityRegisterService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +26,10 @@ class RegisteredUserController extends Controller
     public function create(Request $request): View
     {
         $email = null;
+
+        if ($request->has('activity')){
+            session()->put('activity', $request->input('activity'));
+        }
 
         if($request->has('invitation_token')){
 
@@ -47,29 +54,41 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($request->session()->get('invitation_token')) {
-            $invitation = RegistrationInvitation::where('token', $request->session()->get('invitation_token'))
-                ->where('email', $request->email)
-                ->whereNull('registered_at')
-                ->firstOr(fn() => throw ValidationException::withMessages(['invitation' => 'Invitation link does not match email indicated!']));
 
-            $roleFromInvite = $invitation->role_id;
-            $company_id = $invitation->company_id;
-
-            $invitation->update(['registered_at' => now()]);
+           $invitationTokenData = $this->registrationWithToken($request);
         }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => $roleFromInvite ?? Role::CUSTOMER->value,
-            'company_id' => $company_id ?? null,
+            'role_id' => $invitationTokenData['role_id'] ?? Role::CUSTOMER->value,
+            'company_id' => $invitationTokenData['company_id'] ?? null,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
+        if ($request->session()->get('activity')){
+
+            $message = (new ActivityRegisterService($user, Activity::find($request->session()->get('activity'))))->registerOnActivity();
+
+            return redirect()->route('my-activity.show')->with('success', $message);
+        }
+
         return redirect(RouteServiceProvider::HOME);
+    }
+
+    protected function registrationWithToken($request): array
+    {
+        $invitation = RegistrationInvitation::where('token', $request->session()->get('invitation_token'))
+            ->where('email', $request->email)
+            ->whereNull('registered_at')
+            ->firstOr(fn() => throw ValidationException::withMessages(['invitation' => 'Invitation link does not match email indicated!']));
+
+        $invitation->update(['registered_at' => now()]);
+
+        return ['role_id' => $invitation->role_id, 'company_id' => $invitation->company_id];
     }
 }

@@ -48,4 +48,9 @@ class Activity extends Model
         return $this->belongsToMany(User::class, 'activity_user', 'activity_id', 'user_id')
             ->withTimestamps();
     }
+
+    public function guide(): User|null
+    {
+        return User::find($this->guide_id);
+    }
 }

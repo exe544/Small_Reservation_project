@@ -16,6 +16,11 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     @auth()
+                        @if(auth()->user()->role->name === 'customer' || auth()->user()->role->name === 'guide')
+                            <x-nav-link :href="route('my-activity.show')" :active="request()->routeIs('my-activity.show')">
+                                {{ __('My Activities') }}
+                            </x-nav-link>
+                        @endif
                     @if(auth()->user()->role->name === 'administrator')
                     <x-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.index')">
                         {{ __('Companies') }}
