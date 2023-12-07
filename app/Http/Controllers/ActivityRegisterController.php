@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Notifications\RegisteredToActivityNotification;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,6 +21,8 @@ class ActivityRegisterController extends Controller
       abort_if($user->activities()->where('id', $activity->id)->exists(), Response::HTTP_CONFLICT);
 
       $user->activities()->attach($activity->id);
+
+      $user->notify(new RegisteredToActivityNotification($activity));
 
       return to_route('my-activity.show')->with('success', 'You have successfully registered.');
     }
