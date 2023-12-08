@@ -16,9 +16,13 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     @auth()
-                        @if(auth()->user()->role->name === 'customer' || auth()->user()->role->name === 'guide')
+                        @if(auth()->user()->role->name === 'customer')
                             <x-nav-link :href="route('my-activity.show')" :active="request()->routeIs('my-activity.show')">
                                 {{ __('My Activities') }}
+                            </x-nav-link>
+                        @else(auth()->user()->role->name === 'guide')
+                            <x-nav-link :href="route('guide-activity.show')" :active="request()->routeIs('guide-activities.show')">
+                                {{ __('Guide\'s Activities') }}
                             </x-nav-link>
                         @endif
                     @if(auth()->user()->role->name === 'administrator')
