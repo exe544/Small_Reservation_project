@@ -20,6 +20,6 @@ class ActivitySeeder extends Seeder
             'company_id' => $company->id,
             'role_id' => Role::GUIDE->value]);
 
-        Activity::factory(9)->create(['company_id' => $company->id, 'guide_id' => $guide->id]);
+        Activity::factory(9)->withPhotoName()->create(['company_id' => $company->id, 'guide_id' => $guide->id]);
     }
 }
